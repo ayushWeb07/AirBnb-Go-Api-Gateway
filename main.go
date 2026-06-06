@@ -15,9 +15,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// create the storage instance
+	storage := config.CreateNewStorage()
+
 	// create the server instance
 	serverApp := &app.App{
 		ServerConfig: cfg,
+		Storage:      storage,
 	}
 
 	// run the app

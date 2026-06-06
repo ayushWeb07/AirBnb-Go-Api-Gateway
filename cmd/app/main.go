@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/config"
+	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/repositories"
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/routers"
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
@@ -15,6 +16,7 @@ type AppInterface interface {
 
 type App struct {
 	ServerConfig *config.ServerConfig
+	Storage      *repositories.Storage
 }
 
 func (app *App) Run() {
