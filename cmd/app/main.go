@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/config"
+	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/routers"
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 )
@@ -34,7 +35,7 @@ func (app *App) Run() {
 		ReadTimeout:  app.ServerConfig.ReadTimeout,
 		WriteTimeout: app.ServerConfig.WriteTimeout,
 		IdleTimeout:  app.ServerConfig.IdleTimeout,
-		Handler:      nil,
+		Handler:      routers.SetupRouter(),
 	}
 
 	// start the server
