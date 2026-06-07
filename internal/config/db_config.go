@@ -37,7 +37,7 @@ func LoadDbConfig() (*DbConfig, error) {
 	return cfg, nil
 }
 
-func SetupDB(dbConfig *DbConfig, logger *zap.Logger) {
+func SetupDB(dbConfig *DbConfig, logger *zap.Logger) (*sql.DB, error) {
 	// capture connection properties
 	cfg := mysql.NewConfig()
 	cfg.User = dbConfig.DbUsername
@@ -46,12 +46,14 @@ func SetupDB(dbConfig *DbConfig, logger *zap.Logger) {
 	cfg.Addr = dbConfig.DbAddress
 	cfg.DBName = dbConfig.DbName
 
-	// create a database handle
+	// open a database connection
 	db, err := sql.Open("mysql", cfg.FormatDSN())
 
 	if err != nil {
 		logger.Fatal("Something went wrong while opening database connection",
 			zap.String("error", err.Error()))
+
+		return nil, err
 	}
 
 	// ping the database
@@ -59,7 +61,12 @@ func SetupDB(dbConfig *DbConfig, logger *zap.Logger) {
 	if pingErr != nil {
 		logger.Fatal("Something went wrong while pinging database",
 			zap.String("error", pingErr.Error()))
+
+		return nil, pingErr
 	}
 
-	logger.Info("Successfully connected to the DB")
+	logger.Info("Successfully connected to the DB",
+		zap.String("db_name", dbConfig.DbName))
+
+	return db, nil
 }

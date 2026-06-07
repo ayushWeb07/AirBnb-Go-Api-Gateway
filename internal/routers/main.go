@@ -1,6 +1,8 @@
 package routers
 
 import (
+	"database/sql"
+
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/controllers"
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/repositories"
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/services"
@@ -13,7 +15,7 @@ type RouterInterface interface {
 	Register(r *chi.Mux)
 }
 
-func RegisterRouters(logger *zap.Logger) *chi.Mux {
+func RegisterRouters(logger *zap.Logger, db *sql.DB) *chi.Mux {
 	// create the router instance
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
@@ -22,7 +24,14 @@ func RegisterRouters(logger *zap.Logger) *chi.Mux {
 	//SetupHealthRouter(router)
 
 	// register user router
-	newUserRouter := NewUserRouter(controllers.NewUserController(services.NewUserService(repositories.NewUserRepository(logger), logger), logger), logger)
+	newUserRouter := NewUserRouter(
+		controllers.NewUserController(
+			services.NewUserService(
+				repositories.NewUserRepository(logger, db), logger,
+			), logger,
+		), logger,
+	)
+
 	newUserRouter.Register(router)
 
 	return router

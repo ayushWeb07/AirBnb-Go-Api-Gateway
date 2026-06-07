@@ -1,6 +1,7 @@
 package app
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/config"
@@ -39,7 +40,13 @@ func (app *App) Run() {
 	}
 
 	// setup the db
-	config.SetupDB(app.DbConfig, logger)
+	db, err := config.SetupDB(app.DbConfig, logger)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer db.Close()
 
 	// create the server instance
 	server := &http.Server{
@@ -47,14 +54,14 @@ func (app *App) Run() {
 		ReadTimeout:  app.ServerConfig.ReadTimeout,
 		WriteTimeout: app.ServerConfig.WriteTimeout,
 		IdleTimeout:  app.ServerConfig.IdleTimeout,
-		Handler:      routers.RegisterRouters(logger),
+		Handler:      routers.RegisterRouters(logger, db),
 	}
 
 	// start the server
 	logger.Info("Starting the server...",
 		zap.String("port", app.ServerConfig.Addr))
 
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 
 	if err != nil {
 		logger.Fatal("Something went wrong while starting server",
