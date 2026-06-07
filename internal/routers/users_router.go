@@ -16,6 +16,7 @@ func (ur *UserRouter) Register(r *chi.Mux) {
 		r.Get("/create", ur.UserController.CreateUser)
 		r.Get("/id", ur.UserController.GetUserById)
 		r.Get("/", ur.UserController.GetAllUsers)
+		r.Get("/delete", ur.UserController.DeleteUserById)
 	})
 }
 

@@ -9,6 +9,7 @@ type UserServiceInterface interface {
 	CreateUser()
 	GetUserById()
 	GetAllUsers()
+	DeleteUserById()
 }
 
 type UserService struct {
@@ -29,6 +30,11 @@ func (us *UserService) GetUserById() {
 func (us *UserService) CreateUser() {
 	us.logger.Info("Create user service called...")
 	us.UserRepository.CreateUser()
+}
+
+func (us *UserService) DeleteUserById() {
+	us.logger.Info("Delete user service called...")
+	us.UserRepository.DeleteUserById()
 }
 
 func NewUserService(repo repositories.UserRepositoryInterface, logger *zap.Logger) UserServiceInterface {

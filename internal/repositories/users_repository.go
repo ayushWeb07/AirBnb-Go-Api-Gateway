@@ -11,6 +11,7 @@ type UserRepositoryInterface interface {
 	CreateUser()
 	GetUserById()
 	GetAllUsers()
+	DeleteUserById()
 }
 
 type UserRepository struct {
@@ -114,6 +115,39 @@ func (ur *UserRepository) CreateUser() {
 
 	ur.logger.Info("Successfully inserted user into the database",
 		zap.Int64("user_id", id))
+}
+
+func (ur *UserRepository) DeleteUserById() {
+	// prepare and execute the query
+	query := "DELETE FROM users WHERE id = ?"
+	result, err := ur.db.Exec(query, 1)
+
+	if err != nil {
+		ur.logger.Error("Failed to delete user from the database",
+			zap.String("error", err.Error()))
+
+		return
+	}
+
+	// check if any rows got affected
+	rowsAffected, err := result.RowsAffected()
+
+	if err != nil {
+		ur.logger.Error("Failed to delete user from the database",
+			zap.String("error", err.Error()))
+
+		return
+	}
+
+	if rowsAffected == 0 {
+		ur.logger.Error("No user has been deleted from the database",
+			zap.Int("user_id", 1))
+
+		return
+	}
+
+	ur.logger.Info("Successfully deleted the user from the database",
+		zap.Int("user_id", 1))
 }
 
 func NewUserRepository(logger *zap.Logger, db *sql.DB) UserRepositoryInterface {
