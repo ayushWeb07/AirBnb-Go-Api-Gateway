@@ -28,15 +28,18 @@ func (app *App) Run() {
 	validate := validator.New()
 
 	if validationErr := validate.Struct(app.ServerConfig); validationErr != nil {
-		logger.Error("Failed while validating the server config",
+		logger.Fatal("Failed while validating the server config",
 			zap.String("error", validationErr.Error()))
 	}
 
 	// validate the db config
 	if validationErr := validate.Struct(app.DbConfig); validationErr != nil {
-		logger.Error("Failed while validating the db config",
+		logger.Fatal("Failed while validating the db config",
 			zap.String("error", validationErr.Error()))
 	}
+
+	// setup the db
+	config.SetupDB(app.DbConfig, logger)
 
 	// create the server instance
 	server := &http.Server{
@@ -44,7 +47,7 @@ func (app *App) Run() {
 		ReadTimeout:  app.ServerConfig.ReadTimeout,
 		WriteTimeout: app.ServerConfig.WriteTimeout,
 		IdleTimeout:  app.ServerConfig.IdleTimeout,
-		Handler:      routers.RegisterRouters(),
+		Handler:      routers.RegisterRouters(logger),
 	}
 
 	// start the server
@@ -54,6 +57,7 @@ func (app *App) Run() {
 	err := server.ListenAndServe()
 
 	if err != nil {
-		logger.Error("Something went wrong while starting server")
+		logger.Fatal("Something went wrong while starting server",
+			zap.String("error", err.Error()))
 	}
 }

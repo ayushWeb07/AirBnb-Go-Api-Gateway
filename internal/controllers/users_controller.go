@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/services"
+	"go.uber.org/zap"
 )
 
 type UserControllerInterface interface {
@@ -12,6 +13,7 @@ type UserControllerInterface interface {
 
 type UserController struct {
 	UserService services.UserServiceInterface
+	logger      *zap.Logger
 }
 
 func (uc *UserController) CreateUser(resWriter http.ResponseWriter, req *http.Request) {
@@ -19,9 +21,10 @@ func (uc *UserController) CreateUser(resWriter http.ResponseWriter, req *http.Re
 	uc.UserService.CreateUser()
 }
 
-func NewUserController(service services.UserServiceInterface) UserControllerInterface {
+func NewUserController(service services.UserServiceInterface, logger *zap.Logger) UserControllerInterface {
 	newUserController := &UserController{
 		UserService: service,
+		logger:      logger,
 	}
 
 	return newUserController

@@ -2,25 +2,27 @@ package repositories
 
 import (
 	"database/sql"
-	"fmt"
+
+	"go.uber.org/zap"
 )
 
 type UserRepositoryInterface interface {
-	CreateUser() error
+	CreateUser()
 }
 
 type UserRepository struct {
-	db *sql.DB
+	db     *sql.DB
+	logger *zap.Logger
 }
 
-func (ur *UserRepository) CreateUser() error {
-	fmt.Println("Create user repository called...")
-	return nil
+func (ur *UserRepository) CreateUser() {
+	ur.logger.Info("Create user repository called...")
 }
 
-func NewUserRepository() UserRepositoryInterface {
+func NewUserRepository(logger *zap.Logger) UserRepositoryInterface {
 	newUserRepository := &UserRepository{
-		db: nil,
+		db:     nil,
+		logger: logger,
 	}
 
 	return newUserRepository

@@ -1,9 +1,12 @@
 package config
 
 import (
+	"database/sql"
 	"fmt"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
 )
 
 type DbConfig struct {
@@ -32,4 +35,31 @@ func LoadDbConfig() (*DbConfig, error) {
 	}
 
 	return cfg, nil
+}
+
+func SetupDB(dbConfig *DbConfig, logger *zap.Logger) {
+	// capture connection properties
+	cfg := mysql.NewConfig()
+	cfg.User = dbConfig.DbUsername
+	cfg.Passwd = dbConfig.DbPassword
+	cfg.Net = dbConfig.DbNet
+	cfg.Addr = dbConfig.DbAddress
+	cfg.DBName = dbConfig.DbName
+
+	// create a database handle
+	db, err := sql.Open("mysql", cfg.FormatDSN())
+
+	if err != nil {
+		logger.Fatal("Something went wrong while opening database connection",
+			zap.String("error", err.Error()))
+	}
+
+	// ping the database
+	pingErr := db.Ping()
+	if pingErr != nil {
+		logger.Fatal("Something went wrong while pinging database",
+			zap.String("error", pingErr.Error()))
+	}
+
+	logger.Info("Successfully connected to the DB")
 }
