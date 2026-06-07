@@ -98,7 +98,11 @@ func (ur *UserRepository) CreateUser() error {
 	userModel := &models.UserModel{
 		Username: "ayush",
 		Email:    "ayush@gmail.com",
+		Password: "ayush",
 	}
+
+	// hash the password
+	//bcrypt.GenerateFromPassword([]byte(userModel))
 
 	// insert into the db
 	query := "INSERT INTO users (username, email) VALUES (?, ?)"
