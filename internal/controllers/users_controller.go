@@ -1,17 +1,22 @@
 package controllers
 
-import "github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/services"
+import (
+	"net/http"
+
+	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/services"
+)
 
 type UserControllerInterface interface {
-	CreateUser() error
+	CreateUser(resWriter http.ResponseWriter, req *http.Request)
 }
 
 type UserController struct {
 	UserService services.UserServiceInterface
 }
 
-func (u *UserController) CreateUser() error {
-	return nil
+func (uc *UserController) CreateUser(resWriter http.ResponseWriter, req *http.Request) {
+	resWriter.Write([]byte("Create user endpoint working fine!"))
+	uc.UserService.CreateUser()
 }
 
 func NewUserController(service services.UserServiceInterface) UserControllerInterface {

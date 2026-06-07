@@ -1,17 +1,22 @@
 package services
 
-import "github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/repositories"
+import (
+	"fmt"
+
+	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/repositories"
+)
 
 type UserServiceInterface interface {
-	CreateUser() error
+	CreateUser()
 }
 
 type UserService struct {
 	UserRepository repositories.UserRepositoryInterface
 }
 
-func (u *UserService) CreateUser() error {
-	return nil
+func (us *UserService) CreateUser() {
+	fmt.Println("Create user service called...")
+	us.UserRepository.CreateUser()
 }
 
 func NewUserService(repo repositories.UserRepositoryInterface) UserServiceInterface {
