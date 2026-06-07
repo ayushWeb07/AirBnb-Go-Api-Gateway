@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/config"
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/controllers"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
@@ -9,6 +10,7 @@ import (
 type UserRouter struct {
 	UserController controllers.UserControllerInterface
 	logger         *zap.Logger
+	serverConfig   *config.ServerConfig
 }
 
 func (ur *UserRouter) Register(r *chi.Mux) {
@@ -20,10 +22,11 @@ func (ur *UserRouter) Register(r *chi.Mux) {
 	})
 }
 
-func NewUserRouter(controller controllers.UserControllerInterface, logger *zap.Logger) RouterInterface {
+func NewUserRouter(controller controllers.UserControllerInterface, logger *zap.Logger, serverConfig *config.ServerConfig) RouterInterface {
 	newUserRouter := &UserRouter{
 		UserController: controller,
 		logger:         logger,
+		serverConfig:   serverConfig,
 	}
 
 	return newUserRouter

@@ -1,8 +1,12 @@
 package services
 
 import (
+	"time"
+
+	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/config"
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/database/models"
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/repositories"
+	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -17,6 +21,7 @@ type UserServiceInterface interface {
 type UserService struct {
 	UserRepository repositories.UserRepositoryInterface
 	logger         *zap.Logger
+	serverConfig   *config.ServerConfig
 }
 
 func (us *UserService) GetAllUsers() {
@@ -34,13 +39,13 @@ func (us *UserService) CreateUser() {
 
 	// create a dummy user model instance
 	userModel := &models.UserModel{
-		Username: "khabib",
-		Email:    "khabib@gmail.com",
-		Password: "khabib",
+		Username: "conor",
+		Email:    "conor@gmail.com",
+		Password: "conor@2007",
 	}
 
 	// hash the password
-	bytes, err := bcrypt.GenerateFromPassword([]byte(userModel.Password), 14)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(userModel.Password), bcrypt.DefaultCost)
 
 	if err != nil {
 		us.logger.Fatal("Something went wrong while hashing the password",
@@ -51,7 +56,31 @@ func (us *UserService) CreateUser() {
 
 	userModel.Password = string(bytes)
 
-	us.UserRepository.CreateUser(userModel)
+	// call the repository endpoint
+	err = us.UserRepository.CreateUser(userModel)
+
+	if err != nil {
+		return
+	}
+
+	// generate the jwt token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_name":  userModel.Username,
+		"user_email": userModel.Email,
+		"exp":        time.Now().Add(24 * time.Hour).Unix(),
+	})
+
+	tokenString, err := token.SignedString([]byte(us.serverConfig.Addr))
+
+	if err != nil {
+		us.logger.Fatal("Something went wrong while generating the token",
+			zap.String("error", err.Error()))
+
+		return
+	}
+
+	us.logger.Info("Create user service was successful",
+		zap.String("token", tokenString))
 }
 
 func (us *UserService) DeleteUserById() {
@@ -59,10 +88,11 @@ func (us *UserService) DeleteUserById() {
 	us.UserRepository.DeleteUserById()
 }
 
-func NewUserService(repo repositories.UserRepositoryInterface, logger *zap.Logger) UserServiceInterface {
+func NewUserService(repo repositories.UserRepositoryInterface, logger *zap.Logger, serverConfig *config.ServerConfig) UserServiceInterface {
 	newUserService := &UserService{
 		UserRepository: repo,
 		logger:         logger,
+		serverConfig:   serverConfig,
 	}
 
 	return newUserService

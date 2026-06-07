@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/config"
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/database/models"
 	"go.uber.org/zap"
 )
@@ -16,8 +17,9 @@ type UserRepositoryInterface interface {
 }
 
 type UserRepository struct {
-	db     *sql.DB
-	logger *zap.Logger
+	db           *sql.DB
+	logger       *zap.Logger
+	serverConfig *config.ServerConfig
 }
 
 func (ur *UserRepository) GetAllUsers() ([]*models.UserModel, error) {
@@ -155,10 +157,11 @@ func (ur *UserRepository) DeleteUserById() error {
 	return nil
 }
 
-func NewUserRepository(logger *zap.Logger, db *sql.DB) UserRepositoryInterface {
+func NewUserRepository(logger *zap.Logger, db *sql.DB, serverConfig *config.ServerConfig) UserRepositoryInterface {
 	newUserRepository := &UserRepository{
-		db:     db,
-		logger: logger,
+		db:           db,
+		logger:       logger,
+		serverConfig: serverConfig,
 	}
 
 	return newUserRepository

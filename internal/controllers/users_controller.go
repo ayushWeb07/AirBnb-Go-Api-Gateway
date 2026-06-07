@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/config"
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/services"
 	"go.uber.org/zap"
 )
@@ -15,8 +16,9 @@ type UserControllerInterface interface {
 }
 
 type UserController struct {
-	UserService services.UserServiceInterface
-	logger      *zap.Logger
+	UserService  services.UserServiceInterface
+	logger       *zap.Logger
+	serverConfig *config.ServerConfig
 }
 
 func (uc *UserController) GetAllUsers(resWriter http.ResponseWriter, req *http.Request) {
@@ -39,10 +41,11 @@ func (uc *UserController) DeleteUserById(resWriter http.ResponseWriter, req *htt
 	uc.UserService.DeleteUserById()
 }
 
-func NewUserController(service services.UserServiceInterface, logger *zap.Logger) UserControllerInterface {
+func NewUserController(service services.UserServiceInterface, logger *zap.Logger, serverConfig *config.ServerConfig) UserControllerInterface {
 	newUserController := &UserController{
-		UserService: service,
-		logger:      logger,
+		UserService:  service,
+		logger:       logger,
+		serverConfig: serverConfig,
 	}
 
 	return newUserController
