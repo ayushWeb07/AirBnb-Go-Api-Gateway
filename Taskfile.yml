@@ -1,0 +1,30 @@
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  goose:up-all:
+    desc: Apply all migrations
+    cmds:
+      - goose up
+
+  goose:up-by-one:
+    desc: Migrate up a single migration from the current version
+    cmds:
+      - goose up-by-one
+
+  goose:down-by-one:
+    desc: Roll back a single migration from the current version
+    cmds:
+      - goose down
+
+  goose:down-all:
+    desc: Roll back all migrations
+    cmds:
+      - goose down-to 0
+
+  server:run:
+    desc: Run the server
+    cmds:
+      - go run main.go
