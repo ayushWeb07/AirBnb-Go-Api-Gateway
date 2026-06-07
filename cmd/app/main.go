@@ -37,7 +37,7 @@ func (app *App) Run() {
 		ReadTimeout:  app.ServerConfig.ReadTimeout,
 		WriteTimeout: app.ServerConfig.WriteTimeout,
 		IdleTimeout:  app.ServerConfig.IdleTimeout,
-		Handler:      routers.SetupRouter(),
+		Handler:      routers.RegisterRouters(),
 	}
 
 	// start the server

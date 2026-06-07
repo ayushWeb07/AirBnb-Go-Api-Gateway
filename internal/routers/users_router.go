@@ -10,7 +10,9 @@ type UserRouter struct {
 }
 
 func (ur *UserRouter) Register(r *chi.Mux) {
-	r.Get("/create", ur.UserController.CreateUser)
+	r.Route("/users", func(r chi.Router) {
+		r.Get("/create", ur.UserController.CreateUser)
+	})
 }
 
 func NewUserRouter(controller controllers.UserControllerInterface) RouterInterface {
