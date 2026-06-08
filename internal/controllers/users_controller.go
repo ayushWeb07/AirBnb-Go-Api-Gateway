@@ -37,13 +37,13 @@ func (uc *UserController) CreateUser(resWriter http.ResponseWriter, req *http.Re
 	userPayload := &dtos.CreateUser{}
 
 	// read the data from the request body
-	err := json.NewDecoder(req.Body).Decode(&userPayload)
+	decodeErr := json.NewDecoder(req.Body).Decode(&userPayload)
 
-	if err != nil {
+	if decodeErr != nil {
 		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
 			"success": false,
 			"message": "Failed to decode the json body",
-			"error":   err.Error(),
+			"error":   decodeErr.Error(),
 		})
 
 		return
@@ -51,26 +51,26 @@ func (uc *UserController) CreateUser(resWriter http.ResponseWriter, req *http.Re
 
 	// validate the request body
 	validate := validator.New(validator.WithRequiredStructEnabled())
-	err = validate.Struct(userPayload)
+	validateErr := validate.Struct(userPayload)
 
-	if err != nil {
+	if validateErr != nil {
 		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
 			"success": false,
 			"message": "Invalid json body has been provided",
-			"error":   err.Error(),
+			"error":   validateErr.Error(),
 		})
 
 		return
 	}
 
 	// call the create user service
-	err = uc.UserService.CreateUser(userPayload)
+	serviceErr := uc.UserService.CreateUser(userPayload)
 
-	if err != nil {
-		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
-			"success": false,
+	if serviceErr != nil {
+		render.JSON(resWriter, serviceErr.StatusCode, map[string]any{
+			"success": serviceErr.Success,
 			"message": "Something went wrong while creating the user",
-			"error":   err.Error(),
+			"error":   serviceErr.Error(),
 		})
 
 		return
@@ -88,13 +88,13 @@ func (uc *UserController) LoginUser(resWriter http.ResponseWriter, req *http.Req
 	userPayload := &dtos.LoginUser{}
 
 	// read the data from the request body
-	err := json.NewDecoder(req.Body).Decode(&userPayload)
+	decodeErr := json.NewDecoder(req.Body).Decode(&userPayload)
 
-	if err != nil {
+	if decodeErr != nil {
 		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
 			"success": false,
 			"message": "Failed to decode the json body",
-			"error":   err.Error(),
+			"error":   decodeErr.Error(),
 		})
 
 		return
@@ -102,26 +102,26 @@ func (uc *UserController) LoginUser(resWriter http.ResponseWriter, req *http.Req
 
 	// validate the request body
 	validate := validator.New(validator.WithRequiredStructEnabled())
-	err = validate.Struct(userPayload)
+	validateErr := validate.Struct(userPayload)
 
-	if err != nil {
+	if validateErr != nil {
 		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
 			"success": false,
 			"message": "Invalid json body has been provided",
-			"error":   err.Error(),
+			"error":   validateErr.Error(),
 		})
 
 		return
 	}
 
 	// call the login user service
-	token, err := uc.UserService.LoginUser(userPayload)
+	token, serviceErr := uc.UserService.LoginUser(userPayload)
 
-	if err != nil {
-		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
-			"success": false,
+	if serviceErr != nil {
+		render.JSON(resWriter, serviceErr.StatusCode, map[string]any{
+			"success": serviceErr.Success,
 			"message": "Something went wrong while logging in",
-			"error":   err.Error(),
+			"error":   serviceErr.Error(),
 		})
 
 		return
@@ -136,13 +136,13 @@ func (uc *UserController) LoginUser(resWriter http.ResponseWriter, req *http.Req
 
 func (uc *UserController) GetAllUsers(resWriter http.ResponseWriter, req *http.Request) {
 	// call the fetch all users service
-	userModels, err := uc.UserService.GetAllUsers()
+	userModels, serviceErr := uc.UserService.GetAllUsers()
 
-	if err != nil {
-		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
-			"success": false,
+	if serviceErr != nil {
+		render.JSON(resWriter, serviceErr.StatusCode, map[string]any{
+			"success": serviceErr.Success,
 			"message": "Something went wrong while getting all users",
-			"error":   err.Error(),
+			"error":   serviceErr.Error(),
 		})
 
 		return
@@ -165,26 +165,26 @@ func (uc *UserController) GetUserById(resWriter http.ResponseWriter, req *http.R
 
 	// validate the params id
 	validate := validator.New(validator.WithRequiredStructEnabled())
-	err := validate.Struct(userPayload)
+	validateErr := validate.Struct(userPayload)
 
-	if err != nil {
+	if validateErr != nil {
 		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
 			"success": false,
 			"message": "Invalid id has been provided",
-			"error":   err.Error(),
+			"error":   validateErr.Error(),
 		})
 
 		return
 	}
 
 	// call the fetch user by id service
-	userModel, err := uc.UserService.GetUserById(userPayload)
+	userModel, serviceErr := uc.UserService.GetUserById(userPayload)
 
-	if err != nil {
-		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
-			"success": false,
+	if serviceErr != nil {
+		render.JSON(resWriter, serviceErr.StatusCode, map[string]any{
+			"success": serviceErr.Success,
 			"message": "Something went wrong while getting the user by id",
-			"error":   err.Error(),
+			"error":   serviceErr.Error(),
 		})
 
 		return
@@ -208,26 +208,26 @@ func (uc *UserController) DeleteUserById(resWriter http.ResponseWriter, req *htt
 
 	// validate the params id
 	validate := validator.New(validator.WithRequiredStructEnabled())
-	err := validate.Struct(userPayload)
+	validateErr := validate.Struct(userPayload)
 
-	if err != nil {
+	if validateErr != nil {
 		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
 			"success": false,
 			"message": "Invalid id has been provided",
-			"error":   err.Error(),
+			"error":   validateErr.Error(),
 		})
 
 		return
 	}
 
 	// call the delete user service
-	err = uc.UserService.DeleteUserById(userPayload)
+	serviceErr := uc.UserService.DeleteUserById(userPayload)
 
-	if err != nil {
-		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
-			"success": false,
+	if serviceErr != nil {
+		render.JSON(resWriter, serviceErr.StatusCode, map[string]any{
+			"success": serviceErr.Success,
 			"message": "Something went wrong while deleting the user",
-			"error":   err.Error(),
+			"error":   serviceErr.Error(),
 		})
 
 		return
