@@ -16,8 +16,8 @@ import (
 type UserServiceInterface interface {
 	CreateUser(userPayload *dtos.CreateUser) error
 	LoginUser(userPayload *dtos.LoginUser) (string, error)
-	GetUserById() (*models.UserModel, error)
 	GetAllUsers() ([]*models.UserModel, error)
+	GetUserById() (*models.UserModel, error)
 	DeleteUserById() error
 }
 

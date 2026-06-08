@@ -21,8 +21,8 @@ func init() {
 type UserControllerInterface interface {
 	CreateUser(resWriter http.ResponseWriter, req *http.Request)
 	LoginUser(resWriter http.ResponseWriter, req *http.Request)
-	GetUserById(resWriter http.ResponseWriter, req *http.Request)
 	GetAllUsers(resWriter http.ResponseWriter, req *http.Request)
+	GetUserById(resWriter http.ResponseWriter, req *http.Request)
 	DeleteUserById(resWriter http.ResponseWriter, req *http.Request)
 }
 
@@ -143,13 +143,15 @@ func (uc *UserController) GetAllUsers(resWriter http.ResponseWriter, req *http.R
 			"message": "Something went wrong while getting all users",
 			"error":   err.Error(),
 		})
-	} else {
-		render.JSON(resWriter, http.StatusOK, map[string]any{
-			"success": true,
-			"message": "Successfully fetched all the users",
-			"count":   len(userModels),
-		})
+
+		return
 	}
+
+	render.JSON(resWriter, http.StatusOK, map[string]any{
+		"success": true,
+		"message": "Successfully fetched all the users",
+		"users":   userModels,
+	})
 }
 
 func (uc *UserController) GetUserById(resWriter http.ResponseWriter, req *http.Request) {
