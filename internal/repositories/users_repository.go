@@ -14,7 +14,7 @@ type UserRepositoryInterface interface {
 	CreateUser(userPayload *dtos.CreateUser) error
 	GetAllUsers() ([]*models.UserModel, error)
 	GetUserById(userPayload *dtos.GetUserById) (*models.UserModel, error)
-	DeleteUserById() error
+	DeleteUserById(userPayload *dtos.DeleteUserById) error
 	GetUserByUsernameAndEmail(userPayload *dtos.GetUserByUsernameAndEmail) (*models.UserModel, error)
 }
 
@@ -147,10 +147,10 @@ func (ur *UserRepository) GetUserByUsernameAndEmail(userPayload *dtos.GetUserByU
 	return existingUserModel, nil
 }
 
-func (ur *UserRepository) DeleteUserById() error {
+func (ur *UserRepository) DeleteUserById(userPayload *dtos.DeleteUserById) error {
 	// prepare and execute the query
 	query := "DELETE FROM users WHERE id = ?"
-	result, err := ur.db.Exec(query, 1)
+	result, err := ur.db.Exec(query, userPayload.ID)
 
 	if err != nil {
 		ur.logger.Error("Failed to delete user from the database",
@@ -171,13 +171,13 @@ func (ur *UserRepository) DeleteUserById() error {
 
 	if rowsAffected == 0 {
 		ur.logger.Error("No user has been deleted from the database",
-			zap.Int("user_id", 1))
+			zap.String("user_id", userPayload.ID))
 
 		return fmt.Errorf("No user has been deleted from the database")
 	}
 
 	ur.logger.Info("Successfully deleted the user from the database",
-		zap.Int("user_id", 1))
+		zap.String("user_id", userPayload.ID))
 
 	return nil
 }

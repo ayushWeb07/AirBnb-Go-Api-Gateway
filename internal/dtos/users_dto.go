@@ -20,3 +20,7 @@ type LoginUser struct {
 type GetUserById struct {
 	ID string `json:"id" validate:"required,number"`
 }
+
+type DeleteUserById struct {
+	ID string `json:"id" validate:"required,number"`
+}

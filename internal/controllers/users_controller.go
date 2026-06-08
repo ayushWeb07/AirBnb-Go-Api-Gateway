@@ -199,8 +199,29 @@ func (uc *UserController) GetUserById(resWriter http.ResponseWriter, req *http.R
 }
 
 func (uc *UserController) DeleteUserById(resWriter http.ResponseWriter, req *http.Request) {
+	// fetch the url params
+	id := chi.URLParam(req, "id")
+
+	userPayload := &dtos.DeleteUserById{
+		ID: id,
+	}
+
+	// validate the params id
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	err := validate.Struct(userPayload)
+
+	if err != nil {
+		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
+			"success": false,
+			"message": "Invalid id has been provided",
+			"error":   err.Error(),
+		})
+
+		return
+	}
+
 	// call the delete user service
-	err := uc.UserService.DeleteUserById()
+	err = uc.UserService.DeleteUserById(userPayload)
 
 	if err != nil {
 		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
@@ -208,12 +229,14 @@ func (uc *UserController) DeleteUserById(resWriter http.ResponseWriter, req *htt
 			"message": "Something went wrong while deleting the user",
 			"error":   err.Error(),
 		})
-	} else {
-		render.JSON(resWriter, http.StatusOK, map[string]any{
-			"success": true,
-			"message": "Successfully deleted the user",
-		})
+
+		return
 	}
+
+	render.JSON(resWriter, http.StatusOK, map[string]any{
+		"success": true,
+		"message": "Successfully deleted the user",
+	})
 }
 
 func NewUserController(service services.UserServiceInterface, logger *zap.Logger, serverConfig *config.ServerConfig) UserControllerInterface {

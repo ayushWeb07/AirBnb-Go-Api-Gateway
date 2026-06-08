@@ -18,7 +18,7 @@ type UserServiceInterface interface {
 	LoginUser(userPayload *dtos.LoginUser) (string, error)
 	GetAllUsers() ([]*models.UserModel, error)
 	GetUserById(userPayload *dtos.GetUserById) (*models.UserModel, error)
-	DeleteUserById() error
+	DeleteUserById(userPayload *dtos.DeleteUserById) error
 }
 
 type UserService struct {
@@ -126,11 +126,11 @@ func (us *UserService) GetUserById(userPayload *dtos.GetUserById) (*models.UserM
 	return userModel, err
 }
 
-func (us *UserService) DeleteUserById() error {
+func (us *UserService) DeleteUserById(userPayload *dtos.DeleteUserById) error {
 	us.logger.Info("Delete user service called...")
 
 	// call the delete user by id repository
-	err := us.UserRepository.DeleteUserById()
+	err := us.UserRepository.DeleteUserById(userPayload)
 	return err
 }
 
