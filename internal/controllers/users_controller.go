@@ -39,7 +39,7 @@ func (uc *UserController) CreateUser(resWriter http.ResponseWriter, req *http.Re
 	err := json.NewDecoder(req.Body).Decode(&userPayload)
 
 	if err != nil {
-		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
+		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
 			"success": false,
 			"message": "Failed to decode the json body",
 			"error":   err.Error(),
@@ -53,7 +53,7 @@ func (uc *UserController) CreateUser(resWriter http.ResponseWriter, req *http.Re
 	err = validate.Struct(userPayload)
 
 	if err != nil {
-		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
+		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
 			"success": false,
 			"message": "Invalid json body has been provided",
 			"error":   err.Error(),
@@ -90,7 +90,7 @@ func (uc *UserController) LoginUser(resWriter http.ResponseWriter, req *http.Req
 	err := json.NewDecoder(req.Body).Decode(&userPayload)
 
 	if err != nil {
-		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
+		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
 			"success": false,
 			"message": "Failed to decode the json body",
 			"error":   err.Error(),
@@ -104,7 +104,7 @@ func (uc *UserController) LoginUser(resWriter http.ResponseWriter, req *http.Req
 	err = validate.Struct(userPayload)
 
 	if err != nil {
-		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
+		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
 			"success": false,
 			"message": "Invalid json body has been provided",
 			"error":   err.Error(),
@@ -122,13 +122,15 @@ func (uc *UserController) LoginUser(resWriter http.ResponseWriter, req *http.Req
 			"message": "Something went wrong while logging in",
 			"error":   err.Error(),
 		})
-	} else {
-		render.JSON(resWriter, http.StatusOK, map[string]any{
-			"success": true,
-			"message": "Login was successful",
-			"token":   token,
-		})
+
+		return
 	}
+
+	render.JSON(resWriter, http.StatusOK, map[string]any{
+		"success": true,
+		"message": "Login was successful",
+		"token":   token,
+	})
 }
 
 func (uc *UserController) GetAllUsers(resWriter http.ResponseWriter, req *http.Request) {
