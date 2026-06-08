@@ -1,10 +1,13 @@
 package controllers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/config"
+	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/dtos"
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/services"
+	"github.com/go-playground/validator/v10"
 	renderPkg "github.com/unrolled/render"
 	"go.uber.org/zap"
 )
@@ -17,16 +20,115 @@ func init() {
 
 type UserControllerInterface interface {
 	CreateUser(resWriter http.ResponseWriter, req *http.Request)
+	LoginUser(resWriter http.ResponseWriter, req *http.Request)
 	GetUserById(resWriter http.ResponseWriter, req *http.Request)
 	GetAllUsers(resWriter http.ResponseWriter, req *http.Request)
 	DeleteUserById(resWriter http.ResponseWriter, req *http.Request)
-	LoginUser(resWriter http.ResponseWriter, req *http.Request)
 }
 
 type UserController struct {
 	UserService  services.UserServiceInterface
 	logger       *zap.Logger
 	serverConfig *config.ServerConfig
+}
+
+func (uc *UserController) CreateUser(resWriter http.ResponseWriter, req *http.Request) {
+	userPayload := &dtos.CreateUser{}
+
+	// read the data from the request body
+	err := json.NewDecoder(req.Body).Decode(&userPayload)
+
+	if err != nil {
+		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
+			"success": false,
+			"message": "Failed to decode the json body",
+			"error":   err.Error(),
+		})
+
+		return
+	}
+
+	// validate the request body
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	err = validate.Struct(userPayload)
+
+	if err != nil {
+		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
+			"success": false,
+			"message": "Invalid json body has been provided",
+			"error":   err.Error(),
+		})
+
+		return
+	}
+
+	// call the create user service
+	err = uc.UserService.CreateUser(userPayload)
+
+	if err != nil {
+		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
+			"success": false,
+			"message": "Something went wrong while creating the user",
+			"error":   err.Error(),
+		})
+
+		return
+	}
+
+	render.JSON(resWriter, http.StatusCreated, map[string]any{
+		"success":  true,
+		"message":  "Successfully created the user",
+		"email":    userPayload.Email,
+		"username": userPayload.Username,
+	})
+}
+
+func (uc *UserController) LoginUser(resWriter http.ResponseWriter, req *http.Request) {
+	userPayload := &dtos.LoginUser{}
+
+	// read the data from the request body
+	err := json.NewDecoder(req.Body).Decode(&userPayload)
+
+	if err != nil {
+		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
+			"success": false,
+			"message": "Failed to decode the json body",
+			"error":   err.Error(),
+		})
+
+		return
+	}
+
+	// validate the request body
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	err = validate.Struct(userPayload)
+
+	if err != nil {
+		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
+			"success": false,
+			"message": "Invalid json body has been provided",
+			"error":   err.Error(),
+		})
+
+		return
+	}
+
+	// call the login user service
+	token, err := uc.UserService.LoginUser(userPayload)
+
+	if err != nil {
+		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
+			"success": false,
+			"message": "Something went wrong while logging in",
+			"error":   err.Error(),
+		})
+	} else {
+		render.JSON(resWriter, http.StatusOK, map[string]any{
+			"success": true,
+			"message": "Login was successful",
+			"token":   token,
+		})
+	}
 }
 
 func (uc *UserController) GetAllUsers(resWriter http.ResponseWriter, req *http.Request) {
@@ -68,26 +170,6 @@ func (uc *UserController) GetUserById(resWriter http.ResponseWriter, req *http.R
 	}
 }
 
-func (uc *UserController) CreateUser(resWriter http.ResponseWriter, req *http.Request) {
-	// call the create user service
-	userModel, err := uc.UserService.CreateUser()
-
-	if err != nil {
-		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
-			"success": false,
-			"message": "Something went wrong while creating the user",
-			"error":   err.Error(),
-		})
-	} else {
-		render.JSON(resWriter, http.StatusCreated, map[string]any{
-			"success":  true,
-			"message":  "Successfully created the user",
-			"email":    userModel.Email,
-			"username": userModel.Username,
-		})
-	}
-}
-
 func (uc *UserController) DeleteUserById(resWriter http.ResponseWriter, req *http.Request) {
 	// call the delete user service
 	err := uc.UserService.DeleteUserById()
@@ -102,25 +184,6 @@ func (uc *UserController) DeleteUserById(resWriter http.ResponseWriter, req *htt
 		render.JSON(resWriter, http.StatusOK, map[string]any{
 			"success": true,
 			"message": "Successfully deleted the user",
-		})
-	}
-}
-
-func (uc *UserController) LoginUser(resWriter http.ResponseWriter, req *http.Request) {
-	// call the login user service
-	token, err := uc.UserService.LoginUser()
-
-	if err != nil {
-		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
-			"success": false,
-			"message": "Something went wrong while logging in",
-			"error":   err.Error(),
-		})
-	} else {
-		render.JSON(resWriter, http.StatusOK, map[string]any{
-			"success": true,
-			"message": "Login was successful",
-			"token":   token,
 		})
 	}
 }

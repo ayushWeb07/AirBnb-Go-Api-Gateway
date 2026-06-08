@@ -6,6 +6,7 @@ import (
 
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/config"
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/database/models"
+	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/dtos"
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/repositories"
 	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
@@ -13,11 +14,11 @@ import (
 )
 
 type UserServiceInterface interface {
-	CreateUser() (*models.UserModel, error)
+	CreateUser(userPayload *dtos.CreateUser) error
+	LoginUser(userPayload *dtos.LoginUser) (string, error)
 	GetUserById() (*models.UserModel, error)
 	GetAllUsers() ([]*models.UserModel, error)
 	DeleteUserById() error
-	LoginUser() (string, error)
 }
 
 type UserService struct {
@@ -26,90 +27,58 @@ type UserService struct {
 	serverConfig   *config.ServerConfig
 }
 
-func (us *UserService) GetAllUsers() ([]*models.UserModel, error) {
-	us.logger.Info("Get all users service called...")
-
-	// call the fetch all users repository
-	userModels, err := us.UserRepository.GetAllUsers()
-	return userModels, err
-}
-
-func (us *UserService) GetUserById() (*models.UserModel, error) {
-	us.logger.Info("Get by id user service called...")
-
-	// call the fetch user by id repository
-	userModel, err := us.UserRepository.GetUserById()
-	return userModel, err
-}
-
-func (us *UserService) CreateUser() (*models.UserModel, error) {
+func (us *UserService) CreateUser(userPayload *dtos.CreateUser) error {
 	us.logger.Info("Create user service called...")
 
-	// create a dummy user model instance
-	userModel := &models.UserModel{
-		Username: "ronaldo",
-		Email:    "ronaldo@gmail.com",
-		Password: "ronaldo@2007",
-	}
-
 	// check if the user already exists
-	_, err := us.UserRepository.GetUserByUsernameAndEmail(userModel)
+	_, err := us.UserRepository.GetUserByUsernameAndEmail(&dtos.GetUserByUsernameAndEmail{
+		Username: userPayload.Username,
+		Email:    userPayload.Email,
+	})
 
 	if err == nil {
-		return nil, fmt.Errorf("User with such username and email, already exists")
+		return fmt.Errorf("User with such username and email, already exists")
 	}
 
 	// hash the password
-	bytes, err := bcrypt.GenerateFromPassword([]byte(userModel.Password), bcrypt.DefaultCost)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(userPayload.Password), bcrypt.DefaultCost)
 
 	if err != nil {
 		us.logger.Fatal("Something went wrong while hashing the password",
 			zap.String("error", err.Error()))
 
-		return nil, err
+		return err
 	}
 
-	userModel.Password = string(bytes)
+	userPayload.Password = string(bytes)
 
 	// call the create user repository
-	_, err = us.UserRepository.CreateUser(userModel)
+	err = us.UserRepository.CreateUser(userPayload)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	us.logger.Info("Create user service was successful")
 
-	return userModel, nil
+	return nil
 }
 
-func (us *UserService) DeleteUserById() error {
-	us.logger.Info("Delete user service called...")
-
-	// call the delete user by id repository
-	err := us.UserRepository.DeleteUserById()
-	return err
-}
-
-func (us *UserService) LoginUser() (string, error) {
+func (us *UserService) LoginUser(userPayload *dtos.LoginUser) (string, error) {
 	us.logger.Info("Login user service called...")
 
-	// create a dummy user model instance
-	userModel := &models.UserModel{
-		Username: "conor",
-		Email:    "conor@gmail.com",
-		Password: "aonor@2007",
-	}
-
 	// fetch the user by username and email repository
-	existingUserModel, err := us.UserRepository.GetUserByUsernameAndEmail(userModel)
+	existingUserModel, err := us.UserRepository.GetUserByUsernameAndEmail(&dtos.GetUserByUsernameAndEmail{
+		Username: userPayload.Username,
+		Email:    userPayload.Email,
+	})
 
 	if err != nil {
 		return "", err
 	}
 
 	// check if passwords match
-	err = bcrypt.CompareHashAndPassword([]byte(existingUserModel.Password), []byte(userModel.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(existingUserModel.Password), []byte(userPayload.Password))
 
 	if err != nil {
 		us.logger.Error("Invalid password has been provided",
@@ -139,6 +108,30 @@ func (us *UserService) LoginUser() (string, error) {
 		zap.String("token", tokenString))
 
 	return tokenString, nil
+}
+
+func (us *UserService) GetAllUsers() ([]*models.UserModel, error) {
+	us.logger.Info("Get all users service called...")
+
+	// call the fetch all users repository
+	userModels, err := us.UserRepository.GetAllUsers()
+	return userModels, err
+}
+
+func (us *UserService) GetUserById() (*models.UserModel, error) {
+	us.logger.Info("Get by id user service called...")
+
+	// call the fetch user by id repository
+	userModel, err := us.UserRepository.GetUserById()
+	return userModel, err
+}
+
+func (us *UserService) DeleteUserById() error {
+	us.logger.Info("Delete user service called...")
+
+	// call the delete user by id repository
+	err := us.UserRepository.DeleteUserById()
+	return err
 }
 
 func NewUserService(repo repositories.UserRepositoryInterface, logger *zap.Logger, serverConfig *config.ServerConfig) UserServiceInterface {

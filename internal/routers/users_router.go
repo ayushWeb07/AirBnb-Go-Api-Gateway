@@ -15,11 +15,11 @@ type UserRouter struct {
 
 func (ur *UserRouter) Register(r *chi.Mux) {
 	r.Route("/users", func(r chi.Router) {
-		r.Get("/create", ur.UserController.CreateUser)
-		r.Get("/id", ur.UserController.GetUserById)
+		r.Post("/register", ur.UserController.CreateUser)
+		r.Post("/login", ur.UserController.LoginUser)
 		r.Get("/", ur.UserController.GetAllUsers)
-		r.Get("/delete", ur.UserController.DeleteUserById)
-		r.Get("/login", ur.UserController.LoginUser)
+		r.Get("/{id}", ur.UserController.GetUserById)
+		r.Delete("/{id}", ur.UserController.DeleteUserById)
 	})
 }
 

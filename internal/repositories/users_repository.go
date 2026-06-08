@@ -6,21 +6,49 @@ import (
 
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/config"
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/database/models"
+	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/dtos"
 	"go.uber.org/zap"
 )
 
 type UserRepositoryInterface interface {
+	CreateUser(userPayload *dtos.CreateUser) error
 	GetAllUsers() ([]*models.UserModel, error)
 	GetUserById() (*models.UserModel, error)
-	CreateUser(userModel *models.UserModel) (*models.UserModel, error)
 	DeleteUserById() error
-	GetUserByUsernameAndEmail(userModel *models.UserModel) (*models.UserModel, error)
+	GetUserByUsernameAndEmail(userPayload *dtos.GetUserByUsernameAndEmail) (*models.UserModel, error)
 }
 
 type UserRepository struct {
 	db           *sql.DB
 	logger       *zap.Logger
 	serverConfig *config.ServerConfig
+}
+
+func (ur *UserRepository) CreateUser(userPayload *dtos.CreateUser) error {
+	// insert into the db
+	query := "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
+	result, err := ur.db.Exec(query, userPayload.Username, userPayload.Email, userPayload.Password)
+
+	if err != nil {
+		ur.logger.Error("Failed to insert user into the database",
+			zap.String("error", err.Error()))
+
+		return err
+	}
+
+	id, err := result.LastInsertId()
+
+	if err != nil {
+		ur.logger.Error("Failed to insert user into the database",
+			zap.String("error", err.Error()))
+
+		return err
+	}
+
+	ur.logger.Info("Successfully inserted user into the database",
+		zap.Int64("user_id", id))
+
+	return nil
 }
 
 func (ur *UserRepository) GetAllUsers() ([]*models.UserModel, error) {
@@ -96,33 +124,6 @@ func (ur *UserRepository) GetUserById() (*models.UserModel, error) {
 	return userModel, nil
 }
 
-func (ur *UserRepository) CreateUser(userModel *models.UserModel) (*models.UserModel, error) {
-	// insert into the db
-	query := "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
-	result, err := ur.db.Exec(query, userModel.Username, userModel.Email, userModel.Password)
-
-	if err != nil {
-		ur.logger.Error("Failed to insert user into the database",
-			zap.String("error", err.Error()))
-
-		return nil, err
-	}
-
-	id, err := result.LastInsertId()
-
-	if err != nil {
-		ur.logger.Error("Failed to insert user into the database",
-			zap.String("error", err.Error()))
-
-		return nil, err
-	}
-
-	ur.logger.Info("Successfully inserted user into the database",
-		zap.Int64("user_id", id))
-
-	return userModel, nil
-}
-
 func (ur *UserRepository) DeleteUserById() error {
 	// prepare and execute the query
 	query := "DELETE FROM users WHERE id = ?"
@@ -158,13 +159,13 @@ func (ur *UserRepository) DeleteUserById() error {
 	return nil
 }
 
-func (ur *UserRepository) GetUserByUsernameAndEmail(userModel *models.UserModel) (*models.UserModel, error) {
+func (ur *UserRepository) GetUserByUsernameAndEmail(userPayload *dtos.GetUserByUsernameAndEmail) (*models.UserModel, error) {
 	existingUserModel := &models.UserModel{}
 
 	// fetch from the db
 	query := "SELECT id, username, email, password FROM users WHERE username = ? AND email = ?"
 
-	if err := ur.db.QueryRow(query, userModel.Username, userModel.Email).Scan(&existingUserModel.ID, &existingUserModel.Username, &existingUserModel.Email, &existingUserModel.Password); err != nil {
+	if err := ur.db.QueryRow(query, userPayload.Username, userPayload.Email).Scan(&existingUserModel.ID, &existingUserModel.Username, &existingUserModel.Email, &existingUserModel.Password); err != nil {
 		if err == sql.ErrNoRows {
 			ur.logger.Error("No such user found in the database",
 				zap.String("error", err.Error()))
