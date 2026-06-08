@@ -182,7 +182,7 @@ func (ur *UserRepository) DeleteUserById(userPayload *dtos.DeleteUserById) *util
 		ur.logger.Error("No user has been deleted from the database",
 			zap.String("id", userPayload.ID))
 
-		return utils.BadRequest("User with such id not found")
+		return utils.NotFound("User with such id not found")
 	}
 
 	ur.logger.Info("Successfully deleted the user from the database",
