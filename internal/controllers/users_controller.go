@@ -7,6 +7,7 @@ import (
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/config"
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/dtos"
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/services"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 	renderPkg "github.com/unrolled/render"
 	"go.uber.org/zap"
@@ -150,13 +151,34 @@ func (uc *UserController) GetAllUsers(resWriter http.ResponseWriter, req *http.R
 	render.JSON(resWriter, http.StatusOK, map[string]any{
 		"success": true,
 		"message": "Successfully fetched all the users",
-		"users":   userModels,
+		"count":   len(userModels),
 	})
 }
 
 func (uc *UserController) GetUserById(resWriter http.ResponseWriter, req *http.Request) {
+	// fetch the url params
+	id := chi.URLParam(req, "id")
+
+	userPayload := &dtos.GetUserById{
+		ID: id,
+	}
+
+	// validate the params id
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	err := validate.Struct(userPayload)
+
+	if err != nil {
+		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
+			"success": false,
+			"message": "Invalid id has been provided",
+			"error":   err.Error(),
+		})
+
+		return
+	}
+
 	// call the fetch user by id service
-	userModel, err := uc.UserService.GetUserById()
+	userModel, err := uc.UserService.GetUserById(userPayload)
 
 	if err != nil {
 		render.JSON(resWriter, http.StatusInternalServerError, map[string]any{
@@ -164,14 +186,16 @@ func (uc *UserController) GetUserById(resWriter http.ResponseWriter, req *http.R
 			"message": "Something went wrong while getting the user by id",
 			"error":   err.Error(),
 		})
-	} else {
-		render.JSON(resWriter, http.StatusOK, map[string]any{
-			"success":  true,
-			"message":  "Successfully fetched the user by id",
-			"email":    userModel.Email,
-			"username": userModel.Username,
-		})
+
+		return
 	}
+
+	render.JSON(resWriter, http.StatusOK, map[string]any{
+		"success":  true,
+		"message":  "Successfully fetched the user by id",
+		"email":    userModel.Email,
+		"username": userModel.Username,
+	})
 }
 
 func (uc *UserController) DeleteUserById(resWriter http.ResponseWriter, req *http.Request) {

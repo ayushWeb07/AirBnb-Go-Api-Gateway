@@ -16,3 +16,7 @@ type LoginUser struct {
 	Email    string `json:"email" validate:"required,email,min=6,max=100"`
 	Password string `json:"password" validate:"required,min=8,max=100"`
 }
+
+type GetUserById struct {
+	ID string `json:"id" validate:"required,number"`
+}

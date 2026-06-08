@@ -17,7 +17,7 @@ type UserServiceInterface interface {
 	CreateUser(userPayload *dtos.CreateUser) error
 	LoginUser(userPayload *dtos.LoginUser) (string, error)
 	GetAllUsers() ([]*models.UserModel, error)
-	GetUserById() (*models.UserModel, error)
+	GetUserById(userPayload *dtos.GetUserById) (*models.UserModel, error)
 	DeleteUserById() error
 }
 
@@ -118,11 +118,11 @@ func (us *UserService) GetAllUsers() ([]*models.UserModel, error) {
 	return userModels, err
 }
 
-func (us *UserService) GetUserById() (*models.UserModel, error) {
+func (us *UserService) GetUserById(userPayload *dtos.GetUserById) (*models.UserModel, error) {
 	us.logger.Info("Get by id user service called...")
 
 	// call the fetch user by id repository
-	userModel, err := us.UserRepository.GetUserById()
+	userModel, err := us.UserRepository.GetUserById(userPayload)
 	return userModel, err
 }
 

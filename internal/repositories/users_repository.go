@@ -13,7 +13,7 @@ import (
 type UserRepositoryInterface interface {
 	CreateUser(userPayload *dtos.CreateUser) error
 	GetAllUsers() ([]*models.UserModel, error)
-	GetUserById() (*models.UserModel, error)
+	GetUserById(userPayload *dtos.GetUserById) (*models.UserModel, error)
 	DeleteUserById() error
 	GetUserByUsernameAndEmail(userPayload *dtos.GetUserByUsernameAndEmail) (*models.UserModel, error)
 }
@@ -94,14 +94,14 @@ func (ur *UserRepository) GetAllUsers() ([]*models.UserModel, error) {
 	return userModels, nil
 }
 
-func (ur *UserRepository) GetUserById() (*models.UserModel, error) {
+func (ur *UserRepository) GetUserById(userPayload *dtos.GetUserById) (*models.UserModel, error) {
 	// create the dummy instance
 	userModel := &models.UserModel{}
 
 	// fetch from the db
 	query := "SELECT id, username, email FROM users WHERE id = ?"
 
-	if err := ur.db.QueryRow(query, 1).Scan(&userModel.ID, &userModel.Username, &userModel.Email); err != nil {
+	if err := ur.db.QueryRow(query, userPayload.ID).Scan(&userModel.ID, &userModel.Username, &userModel.Email); err != nil {
 		if err == sql.ErrNoRows {
 			ur.logger.Error("Failed to fetch the user from the database",
 				zap.String("error", err.Error()))
