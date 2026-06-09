@@ -39,8 +39,9 @@ type GetUserById struct {
 	ID string `validate:"required,number"`
 }
 
-func (u GetUserById) SetUrlParams(req *http.Request) {
+func (u GetUserById) SetUrlParams(req *http.Request) UrlParamSetterInterface {
 	u.ID = chi.URLParam(req, "id")
+	return u
 }
 
 func (u GetUserById) Describe() string {
@@ -51,8 +52,9 @@ type DeleteUserById struct {
 	ID string `validate:"required,number"`
 }
 
-func (u DeleteUserById) SetUrlParams(req *http.Request) {
+func (u DeleteUserById) SetUrlParams(req *http.Request) UrlParamSetterInterface {
 	u.ID = chi.URLParam(req, "id")
+	return u
 }
 
 func (u DeleteUserById) Describe() string {

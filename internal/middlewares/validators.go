@@ -13,10 +13,10 @@ import (
 // HTTP middleware to decode and validate JSON request body
 func DecodeAndValidateRequestBody[T dtos.DtoInterface](next http.Handler) http.Handler {
 	return http.HandlerFunc(func(resWriter http.ResponseWriter, req *http.Request) {
-		var userPayload T
+		userPayload := new(T)
 
 		// read the data from the request body
-		decodeErr := json.NewDecoder(req.Body).Decode(&userPayload)
+		decodeErr := json.NewDecoder(req.Body).Decode(userPayload)
 
 		if decodeErr != nil {
 			utils.WriteJsonResponse(http.StatusBadRequest, resWriter, map[string]any{
@@ -50,10 +50,10 @@ func DecodeAndValidateRequestBody[T dtos.DtoInterface](next http.Handler) http.H
 // HTTP middleware to decode and validate request params
 func DecodeAndValidateParams[T dtos.UrlParamSetterInterface](next http.Handler) http.Handler {
 	return http.HandlerFunc(func(resWriter http.ResponseWriter, req *http.Request) {
-		var userPayload T
+		userPayload := new(T) // *T
 
 		// assign req url params
-		userPayload.SetUrlParams(req)
+		*userPayload = (*userPayload).SetUrlParams(req).(T)
 
 		// validate the request params
 		validate := validator.New(validator.WithRequiredStructEnabled())

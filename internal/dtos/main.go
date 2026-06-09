@@ -7,5 +7,5 @@ type DtoInterface interface {
 }
 
 type UrlParamSetterInterface interface {
-	SetUrlParams(req *http.Request)
+	SetUrlParams(req *http.Request) UrlParamSetterInterface
 }
