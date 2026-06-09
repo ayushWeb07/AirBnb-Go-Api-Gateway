@@ -7,6 +7,7 @@ import (
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/config"
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/dtos"
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/services"
+	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 	renderPkg "github.com/unrolled/render"
@@ -40,7 +41,7 @@ func (uc *UserController) CreateUser(resWriter http.ResponseWriter, req *http.Re
 	decodeErr := json.NewDecoder(req.Body).Decode(&userPayload)
 
 	if decodeErr != nil {
-		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
+		utils.WriteJsonResponse(http.StatusBadRequest, resWriter, map[string]any{
 			"success": false,
 			"message": "Failed to decode the json body",
 			"error":   decodeErr.Error(),
@@ -54,7 +55,7 @@ func (uc *UserController) CreateUser(resWriter http.ResponseWriter, req *http.Re
 	validateErr := validate.Struct(userPayload)
 
 	if validateErr != nil {
-		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
+		utils.WriteJsonResponse(http.StatusBadRequest, resWriter, map[string]any{
 			"success": false,
 			"message": "Invalid json body has been provided",
 			"error":   validateErr.Error(),
@@ -67,7 +68,7 @@ func (uc *UserController) CreateUser(resWriter http.ResponseWriter, req *http.Re
 	serviceErr := uc.UserService.CreateUser(userPayload)
 
 	if serviceErr != nil {
-		render.JSON(resWriter, serviceErr.StatusCode, map[string]any{
+		utils.WriteJsonResponse(serviceErr.StatusCode, resWriter, map[string]any{
 			"success": serviceErr.Success,
 			"message": "Something went wrong while creating the user",
 			"error":   serviceErr.Error(),
@@ -76,7 +77,7 @@ func (uc *UserController) CreateUser(resWriter http.ResponseWriter, req *http.Re
 		return
 	}
 
-	render.JSON(resWriter, http.StatusCreated, map[string]any{
+	utils.WriteJsonResponse(http.StatusCreated, resWriter, map[string]any{
 		"success":  true,
 		"message":  "Successfully created the user",
 		"email":    userPayload.Email,
@@ -91,7 +92,7 @@ func (uc *UserController) LoginUser(resWriter http.ResponseWriter, req *http.Req
 	decodeErr := json.NewDecoder(req.Body).Decode(&userPayload)
 
 	if decodeErr != nil {
-		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
+		utils.WriteJsonResponse(http.StatusBadRequest, resWriter, map[string]any{
 			"success": false,
 			"message": "Failed to decode the json body",
 			"error":   decodeErr.Error(),
@@ -105,7 +106,7 @@ func (uc *UserController) LoginUser(resWriter http.ResponseWriter, req *http.Req
 	validateErr := validate.Struct(userPayload)
 
 	if validateErr != nil {
-		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
+		utils.WriteJsonResponse(http.StatusBadRequest, resWriter, map[string]any{
 			"success": false,
 			"message": "Invalid json body has been provided",
 			"error":   validateErr.Error(),
@@ -118,7 +119,7 @@ func (uc *UserController) LoginUser(resWriter http.ResponseWriter, req *http.Req
 	token, serviceErr := uc.UserService.LoginUser(userPayload)
 
 	if serviceErr != nil {
-		render.JSON(resWriter, serviceErr.StatusCode, map[string]any{
+		utils.WriteJsonResponse(serviceErr.StatusCode, resWriter, map[string]any{
 			"success": serviceErr.Success,
 			"message": "Something went wrong while logging in",
 			"error":   serviceErr.Error(),
@@ -127,7 +128,7 @@ func (uc *UserController) LoginUser(resWriter http.ResponseWriter, req *http.Req
 		return
 	}
 
-	render.JSON(resWriter, http.StatusOK, map[string]any{
+	utils.WriteJsonResponse(http.StatusOK, resWriter, map[string]any{
 		"success": true,
 		"message": "Login was successful",
 		"token":   token,
@@ -139,7 +140,7 @@ func (uc *UserController) GetAllUsers(resWriter http.ResponseWriter, req *http.R
 	userModels, serviceErr := uc.UserService.GetAllUsers()
 
 	if serviceErr != nil {
-		render.JSON(resWriter, serviceErr.StatusCode, map[string]any{
+		utils.WriteJsonResponse(serviceErr.StatusCode, resWriter, map[string]any{
 			"success": serviceErr.Success,
 			"message": "Something went wrong while getting all users",
 			"error":   serviceErr.Error(),
@@ -148,7 +149,7 @@ func (uc *UserController) GetAllUsers(resWriter http.ResponseWriter, req *http.R
 		return
 	}
 
-	render.JSON(resWriter, http.StatusOK, map[string]any{
+	utils.WriteJsonResponse(http.StatusOK, resWriter, map[string]any{
 		"success": true,
 		"message": "Successfully fetched all the users",
 		"count":   len(userModels),
@@ -168,7 +169,7 @@ func (uc *UserController) GetUserById(resWriter http.ResponseWriter, req *http.R
 	validateErr := validate.Struct(userPayload)
 
 	if validateErr != nil {
-		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
+		utils.WriteJsonResponse(http.StatusBadRequest, resWriter, map[string]any{
 			"success": false,
 			"message": "Invalid id has been provided",
 			"error":   validateErr.Error(),
@@ -181,7 +182,7 @@ func (uc *UserController) GetUserById(resWriter http.ResponseWriter, req *http.R
 	userModel, serviceErr := uc.UserService.GetUserById(userPayload)
 
 	if serviceErr != nil {
-		render.JSON(resWriter, serviceErr.StatusCode, map[string]any{
+		utils.WriteJsonResponse(serviceErr.StatusCode, resWriter, map[string]any{
 			"success": serviceErr.Success,
 			"message": "Something went wrong while getting the user by id",
 			"error":   serviceErr.Error(),
@@ -190,7 +191,7 @@ func (uc *UserController) GetUserById(resWriter http.ResponseWriter, req *http.R
 		return
 	}
 
-	render.JSON(resWriter, http.StatusOK, map[string]any{
+	utils.WriteJsonResponse(http.StatusOK, resWriter, map[string]any{
 		"success":  true,
 		"message":  "Successfully fetched the user by id",
 		"email":    userModel.Email,
@@ -211,7 +212,7 @@ func (uc *UserController) DeleteUserById(resWriter http.ResponseWriter, req *htt
 	validateErr := validate.Struct(userPayload)
 
 	if validateErr != nil {
-		render.JSON(resWriter, http.StatusBadRequest, map[string]any{
+		utils.WriteJsonResponse(http.StatusBadRequest, resWriter, map[string]any{
 			"success": false,
 			"message": "Invalid id has been provided",
 			"error":   validateErr.Error(),
@@ -224,7 +225,7 @@ func (uc *UserController) DeleteUserById(resWriter http.ResponseWriter, req *htt
 	serviceErr := uc.UserService.DeleteUserById(userPayload)
 
 	if serviceErr != nil {
-		render.JSON(resWriter, serviceErr.StatusCode, map[string]any{
+		utils.WriteJsonResponse(serviceErr.StatusCode, resWriter, map[string]any{
 			"success": serviceErr.Success,
 			"message": "Something went wrong while deleting the user",
 			"error":   serviceErr.Error(),
@@ -233,7 +234,7 @@ func (uc *UserController) DeleteUserById(resWriter http.ResponseWriter, req *htt
 		return
 	}
 
-	render.JSON(resWriter, http.StatusOK, map[string]any{
+	utils.WriteJsonResponse(http.StatusOK, resWriter, map[string]any{
 		"success": true,
 		"message": "Successfully deleted the user",
 	})
