@@ -35,34 +35,7 @@ type UserController struct {
 }
 
 func (uc *UserController) CreateUser(resWriter http.ResponseWriter, req *http.Request) {
-	userPayload := &dtos.CreateUser{}
-
-	// read the data from the request body
-	decodeErr := json.NewDecoder(req.Body).Decode(&userPayload)
-
-	if decodeErr != nil {
-		utils.WriteJsonResponse(http.StatusBadRequest, resWriter, map[string]any{
-			"success": false,
-			"message": "Failed to decode the json body",
-			"error":   decodeErr.Error(),
-		})
-
-		return
-	}
-
-	// validate the request body
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	validateErr := validate.Struct(userPayload)
-
-	if validateErr != nil {
-		utils.WriteJsonResponse(http.StatusBadRequest, resWriter, map[string]any{
-			"success": false,
-			"message": "Invalid json body has been provided",
-			"error":   validateErr.Error(),
-		})
-
-		return
-	}
+	userPayload := req.Context().Value("user").(*dtos.CreateUser)
 
 	// call the create user service
 	serviceErr := uc.UserService.CreateUser(userPayload)
