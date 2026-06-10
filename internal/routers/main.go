@@ -21,7 +21,6 @@ func RegisterRouters(logger *zap.Logger, db *sql.DB, serverConfig *config.Server
 	// create the router instance
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
-
 	router.Use(middlewares.RateLimiter(serverConfig))
 
 	// register health router
