@@ -104,9 +104,9 @@ func (ur *UserRepository) GetUserById(userPayload *dtos.GetUserById) (*models.Us
 	userModel := &models.UserModel{}
 
 	// fetch from the db
-	query := "SELECT id, username, email FROM users WHERE id = ?"
+	query := "SELECT id, username, email, created_at, updated_at FROM users WHERE id = ?"
 
-	queryErr := ur.db.QueryRow(query, userPayload.ID).Scan(&userModel.ID, &userModel.Username, &userModel.Email)
+	queryErr := ur.db.QueryRow(query, userPayload.ID).Scan(&userModel.ID, &userModel.Username, &userModel.Email, &userModel.CreatedAt, &userModel.UpdatedAt)
 
 	if queryErr != nil {
 		if queryErr == sql.ErrNoRows {
