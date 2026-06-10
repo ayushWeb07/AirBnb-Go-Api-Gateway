@@ -54,3 +54,8 @@ tasks:
     desc: Run the server
     cmds:
       - go run main.go
+
+  server:dev:
+    desc: Run the server using air for hot reload
+    cmds:
+      - air

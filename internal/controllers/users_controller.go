@@ -23,6 +23,7 @@ type UserControllerInterface interface {
 	GetAllUsers(resWriter http.ResponseWriter, req *http.Request)
 	GetUserById(resWriter http.ResponseWriter, req *http.Request)
 	DeleteUserById(resWriter http.ResponseWriter, req *http.Request)
+	GetProfile(resWriter http.ResponseWriter, req *http.Request)
 }
 
 type UserController struct {
@@ -141,6 +142,29 @@ func (uc *UserController) DeleteUserById(resWriter http.ResponseWriter, req *htt
 	utils.WriteJsonResponse(http.StatusOK, resWriter, map[string]any{
 		"success": true,
 		"message": "Successfully deleted the user",
+	})
+}
+
+func (uc *UserController) GetProfile(resWriter http.ResponseWriter, req *http.Request) {
+	userPayload := req.Context().Value("payload").(*dtos.GetUserById)
+
+	// call the fetch user by id service
+	userModel, serviceErr := uc.UserService.GetUserById(userPayload)
+
+	if serviceErr != nil {
+		utils.WriteJsonResponse(serviceErr.StatusCode, resWriter, map[string]any{
+			"success": serviceErr.Success,
+			"message": "Something went wrong while getting the profile",
+			"error":   serviceErr.Error(),
+		})
+
+		return
+	}
+
+	utils.WriteJsonResponse(http.StatusOK, resWriter, map[string]any{
+		"success": true,
+		"message": "Successfully fetched the profile",
+		"user":    userModel,
 	})
 }
 

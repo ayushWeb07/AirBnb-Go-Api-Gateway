@@ -89,10 +89,8 @@ func (us *UserService) LoginUser(userPayload *dtos.LoginUser) (string, *utils.Ap
 
 	// generate the jwt token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_name":  existingUserModel.Username,
-		"user_email": existingUserModel.Email,
-		"user_id":    existingUserModel.ID,
-		"exp":        time.Now().Add(24 * time.Hour).Unix(),
+		"id":  existingUserModel.ID,
+		"exp": time.Now().Add(24 * time.Hour).Unix(),
 	})
 
 	tokenString, tokenErr := token.SignedString([]byte(us.serverConfig.JwtSecretKey))

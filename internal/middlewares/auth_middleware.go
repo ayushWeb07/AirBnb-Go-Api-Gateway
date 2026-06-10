@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/config"
+	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/dtos"
 	"github.com/ayushWeb07/AirBnb-Go-Api-Gateway/internal/utils"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -29,7 +30,7 @@ func AuthMiddleware(serverConfig *config.ServerConfig) func(next http.Handler) h
 			}
 
 			// check if it has the Bearer: prefix
-			if ok := strings.HasPrefix(authHeaderToken, "Bearer: "); !ok {
+			if ok := strings.HasPrefix(authHeaderToken, "Bearer "); !ok {
 				utils.WriteJsonResponse(http.StatusUnauthorized, resWriter, map[string]any{
 					"success": false,
 					"message": "Authentication failed",
@@ -40,7 +41,7 @@ func AuthMiddleware(serverConfig *config.ServerConfig) func(next http.Handler) h
 			}
 
 			// trim token and verify
-			tokenString := strings.TrimPrefix(authHeaderToken, "Bearer: ")
+			tokenString := strings.TrimPrefix(authHeaderToken, "Bearer ")
 
 			if tokenString == "" {
 				utils.WriteJsonResponse(http.StatusUnauthorized, resWriter, map[string]any{
@@ -97,9 +98,7 @@ func AuthMiddleware(serverConfig *config.ServerConfig) func(next http.Handler) h
 			}
 
 			// access the payload
-			userName := claims["user_name"].(string)
-			userEmail := claims["user_email"].(string)
-			userId := claims["user_id"].(string)
+			userId := claims["id"].(string)
 			expiryTime := claims["exp"].(float64)
 
 			// check if token has expired
@@ -114,12 +113,11 @@ func AuthMiddleware(serverConfig *config.ServerConfig) func(next http.Handler) h
 			}
 
 			// create a new context including the user details
-			ctx := context.WithValue(req.Context(), "payload", map[string]any{
-				"user_id":    userId,
-				"user_name":  userName,
-				"user_email": userEmail,
-			})
+			userPayload := &dtos.GetUserById{
+				ID: userId,
+			}
 
+			ctx := context.WithValue(req.Context(), "payload", userPayload)
 			next.ServeHTTP(resWriter, req.WithContext(ctx))
 		})
 	}

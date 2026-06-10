@@ -20,6 +20,7 @@ func (ur *UserRouter) Register(r *chi.Mux) {
 		r.With(middlewares.DecodeAndValidateRequestBody[dtos.CreateUser]).Post("/register", ur.UserController.CreateUser)
 		r.With(middlewares.DecodeAndValidateRequestBody[dtos.LoginUser]).Post("/login", ur.UserController.LoginUser)
 		r.Get("/", ur.UserController.GetAllUsers)
+		r.With(middlewares.AuthMiddleware(ur.serverConfig)).Get("/profile", ur.UserController.GetProfile)
 		r.With(middlewares.DecodeAndValidateParams[dtos.GetUserById]).Get("/{id}", ur.UserController.GetUserById)
 		r.With(middlewares.DecodeAndValidateParams[dtos.DeleteUserById]).Delete("/{id}", ur.UserController.DeleteUserById)
 	})
