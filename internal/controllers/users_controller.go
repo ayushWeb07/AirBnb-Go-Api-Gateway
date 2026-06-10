@@ -116,10 +116,9 @@ func (uc *UserController) GetUserById(resWriter http.ResponseWriter, req *http.R
 	}
 
 	utils.WriteJsonResponse(http.StatusOK, resWriter, map[string]any{
-		"success":  true,
-		"message":  "Successfully fetched the user by id",
-		"email":    userModel.Email,
-		"username": userModel.Username,
+		"success": true,
+		"message": "Successfully fetched the user by id",
+		"user":    userModel,
 	})
 }
 
