@@ -16,7 +16,7 @@ type UserRouter struct {
 }
 
 func (ur *UserRouter) Register(r *chi.Mux) {
-	r.Route("/users", func(r chi.Router) {
+	r.Route("/api/v1/users", func(r chi.Router) {
 		r.With(middlewares.DecodeAndValidateRequestBody[dtos.CreateUser]).Post("/register", ur.UserController.CreateUser)
 		r.With(middlewares.DecodeAndValidateRequestBody[dtos.LoginUser]).Post("/login", ur.UserController.LoginUser)
 		r.Get("/", ur.UserController.GetAllUsers)
